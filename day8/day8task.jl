@@ -65,7 +65,7 @@ end
 
 # For two antennas at the same frequency calculate the two antinodes
 # Some might be outside of the map
-function get_antinods(antennas::Vector{NTuple{2,Int}})
+function get_antinods_part1(antennas::Vector{NTuple{2,Int}})
     antinodes = Vector{NTuple{2,Int}}()
     for pos1 in 1:length(antennas)-1
         for pos2 in pos1+1:length(antennas)
@@ -87,6 +87,34 @@ function get_antinods(antennas::Vector{NTuple{2,Int}})
     return antinodes
 end
 
+# For two antennas at the same frequency calculate the two antinodes
+# Some might be outside of the map
+# We now extent the vector, until we leave the map
+# I got this wrong first, the distance does not matter anymore. I need to do this again
+function get_antinods_part2(antennas::Vector{NTuple{2,Int}})
+    antinodes = Vector{NTuple{2,Int}}()
+    for pos1 in 1:length(antennas)-1
+        for pos2 in pos1+1:length(antennas)
+            distance = antennas[pos2] .- antennas[pos1]
+            # println(distance)
+            antinode1 = antennas[pos1] .- distance
+            antinode2 = antennas[pos2] .+ distance
+            while antinode1[1] >= 1 && antinode1[2] >= 1 && antinode1[1] <= 50 && antinode1[2] >= 1 && antinode1[2] <= 50
+                # println("Antinode 1 : $antinode1")
+                append!(antinodes, tuple(antinode1))
+                antinode1 = antinode1 .- distance
+            end
+            while antinode2[1] >= 1 && antinode2[2] >= 1 && antinode2[1] <= 50 && antinode2[2] >= 1 && antinode2[2] <= 50
+                # println("Antinode 2: $antinode2")
+                append!(antinodes, tuple(antinode2))
+                antinode2 = antinode2 .+ distance
+            end
+        end
+    end
+    # println(antinodes)
+    return antinodes
+end
+
 function main()
     # Check how many threads we allow
     print("Number of Threads:")
@@ -99,12 +127,24 @@ function main()
     antinodes = Vector{NTuple{2,Int}}()
     runtime = @elapsed begin
         for (key, value) in antenna_map
-            append!(antinodes, get_antinods(antenna_map[key]))
+            append!(antinodes, get_antinods_part1(antenna_map[key]))
             # Next time I have to think about how to remove duplicates more efficient by utilizing sets
         end
         println("\n")
         println(unique(antinodes))
         println(length(unique(antinodes)))
+    end
+
+    println("Elapsed time: $runtime seconds")
+    antinodes2 = Vector{NTuple{2,Int}}()
+    runtime = @elapsed begin
+        for (key, value) in antenna_map
+            append!(antinodes2, get_antinods_part2(antenna_map[key]))
+            # Next time I have to think about how to remove duplicates more efficient by utilizing sets
+        end
+        println("\n")
+        println(unique(antinodes2))
+        println(length(unique(antinodes2)))
     end
     println("Elapsed time: $runtime seconds")
 end
