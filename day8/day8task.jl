@@ -70,20 +70,16 @@ function get_antinods_part1(antennas::Vector{NTuple{2,Int}})
     for pos1 in 1:length(antennas)-1
         for pos2 in pos1+1:length(antennas)
             distance = antennas[pos2] .- antennas[pos1]
-            # println(distance)
             antinode1 = antennas[pos1] .- distance
             antinode2 = antennas[pos2] .+ distance
             if antinode1[1] >= 1 && antinode1[2] >= 1 && antinode1[1] <= 50 && antinode1[2] >= 1 && antinode1[2] <= 50
-                # println("Antinode 1 : $antinode1")
                 append!(antinodes, tuple(antinode1))
             end
             if antinode2[1] >= 1 && antinode2[2] >= 1 && antinode2[1] <= 50 && antinode2[2] >= 1 && antinode2[2] <= 50
-                # println("Antinode 2: $antinode2")
                 append!(antinodes, tuple(antinode2))
             end
         end
     end
-    # println(antinodes)
     return antinodes
 end
 
@@ -91,27 +87,27 @@ end
 # Some might be outside of the map
 # We now extent the vector, until we leave the map
 # I got this wrong first, the distance does not matter anymore. I need to do this again
+# The antennas itself are now included into the set!
 function get_antinods_part2(antennas::Vector{NTuple{2,Int}})
-    antinodes = Vector{NTuple{2,Int}}()
+    antinodes = Vector{NTuple{2,Int}}(antennas)
     for pos1 in 1:length(antennas)-1
         for pos2 in pos1+1:length(antennas)
             distance = antennas[pos2] .- antennas[pos1]
-            # println(distance)
+            while iseven(distance[1]) && iseven(distance[2]) # this never happens, but in theory it would be ok
+                distance = (distance[1] / 2, distance[2] / 2)
+            end
             antinode1 = antennas[pos1] .- distance
             antinode2 = antennas[pos2] .+ distance
             while antinode1[1] >= 1 && antinode1[2] >= 1 && antinode1[1] <= 50 && antinode1[2] >= 1 && antinode1[2] <= 50
-                # println("Antinode 1 : $antinode1")
                 append!(antinodes, tuple(antinode1))
                 antinode1 = antinode1 .- distance
             end
             while antinode2[1] >= 1 && antinode2[2] >= 1 && antinode2[1] <= 50 && antinode2[2] >= 1 && antinode2[2] <= 50
-                # println("Antinode 2: $antinode2")
                 append!(antinodes, tuple(antinode2))
                 antinode2 = antinode2 .+ distance
             end
         end
     end
-    # println(antinodes)
     return antinodes
 end
 
@@ -130,8 +126,7 @@ function main()
             append!(antinodes, get_antinods_part1(antenna_map[key]))
             # Next time I have to think about how to remove duplicates more efficient by utilizing sets
         end
-        println("\n")
-        println(unique(antinodes))
+        println("Number of antinodes for part 1")
         println(length(unique(antinodes)))
     end
 
@@ -142,8 +137,7 @@ function main()
             append!(antinodes2, get_antinods_part2(antenna_map[key]))
             # Next time I have to think about how to remove duplicates more efficient by utilizing sets
         end
-        println("\n")
-        println(unique(antinodes2))
+        println("Number of antinodes for part 2")
         println(length(unique(antinodes2)))
     end
     println("Elapsed time: $runtime seconds")
